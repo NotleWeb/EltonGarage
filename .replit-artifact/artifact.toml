@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "Elton Garage"
+version = "1.0.0"
+id = "artifacts/elton-garage"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 23868
+
+[services.development]
+run = "pnpm --filter @workspace/elton-garage run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/elton-garage", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/elton-garage", "run", "serve" ]
+
+[services.env]
+PORT = "23868"
+BASE_PATH = "/"
