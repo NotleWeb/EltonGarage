@@ -15,7 +15,10 @@
     },
     "ios": {
       "bundleIdentifier": "com.Elton.eltongarage",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {},
     "web": {
@@ -34,6 +37,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c566f2ff-8524-4ed8-a32f-cd9bd621356e"
+      }
     }
   }
 }
