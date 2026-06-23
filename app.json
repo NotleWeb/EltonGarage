@@ -3,7 +3,7 @@
     "name": "Elton Garage",
     "slug": "elton-garage",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "elton-garage",
     "userInterfaceStyle": "automatic",
@@ -20,9 +20,14 @@
         "ITSAppUsesNonExemptEncryption": false
       }
     },
-    "android": {},
+    "android": {
+      "package": "com.Eltongarage.app"
+    },
     "web": {
-      "favicon": "./assets/images/icon.png"
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/icon.png",
+      "themeColor": "#08060F"
     },
     "plugins": [
       [

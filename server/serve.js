@@ -1,10 +1,8 @@
 /**
- * Standalone production server for Expo static builds.
+ * Standalone production server for the web build.
  *
- * Serves the output of build.js (static-build/) with two special routes:
- * - GET / or /manifest with expo-platform header → platform manifest JSON
- * - GET / without expo-platform → landing page HTML
- * Everything else falls through to static file serving from ./static-build/.
+ * Serves the exported web app from ./dist/ and falls back to the SPA entrypoint
+ * for client-side routes. It also keeps the legacy Expo manifest handling in place.
  *
  * Zero external dependencies — uses only Node.js built-ins (http, fs, path).
  */
@@ -13,7 +11,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const STATIC_ROOT = path.resolve(__dirname, "..", "static-build");
+const STATIC_ROOT = path.resolve(__dirname, "..", "dist");
 const TEMPLATE_PATH = path.resolve(__dirname, "templates", "landing-page.html");
 const basePath = (process.env.BASE_PATH || "/").replace(/\/+$/, "");
 
@@ -92,6 +90,15 @@ function serveStaticFile(urlPath, res) {
   }
 
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+    const indexPath = path.join(STATIC_ROOT, "index.html");
+
+    if (fs.existsSync(indexPath) && safePath !== "favicon.ico") {
+      const content = fs.readFileSync(indexPath);
+      res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+      res.end(content);
+      return;
+    }
+
     res.writeHead(404);
     res.end("Not Found");
     return;
@@ -107,29 +114,45 @@ function serveStaticFile(urlPath, res) {
 const landingPageTemplate = fs.readFileSync(TEMPLATE_PATH, "utf-8");
 const appName = getAppName();
 
-const server = http.createServer((req, res) => {
-  const url = new URL(req.url || "/", `http://${req.headers.host}`);
-  let pathname = url.pathname;
+function startServer(port) {
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url || "/", `http://${req.headers.host}`);
+    let pathname = url.pathname;
 
-  if (basePath && pathname.startsWith(basePath)) {
-    pathname = pathname.slice(basePath.length) || "/";
-  }
-
-  if (pathname === "/" || pathname === "/manifest") {
-    const platform = req.headers["expo-platform"];
-    if (platform === "ios" || platform === "android") {
-      return serveManifest(platform, res);
+    if (basePath && pathname.startsWith(basePath)) {
+      pathname = pathname.slice(basePath.length) || "/";
     }
 
-    if (pathname === "/") {
-      return serveLandingPage(req, res, landingPageTemplate, appName);
-    }
-  }
+    if (pathname === "/" || pathname === "/manifest") {
+      const platform = req.headers["expo-platform"];
+      if (platform === "ios" || platform === "android") {
+        return serveManifest(platform, res);
+      }
 
-  serveStaticFile(pathname, res);
-});
+      if (pathname === "/") {
+        return serveLandingPage(req, res, landingPageTemplate, appName);
+      }
+    }
+
+    serveStaticFile(pathname, res);
+  });
+
+  server.on("error", (error) => {
+    if (error.code === "EADDRINUSE") {
+      const nextPort = port + 1;
+      console.warn(`Port ${port} is already in use. Trying ${nextPort}...`);
+      startServer(nextPort);
+      return;
+    }
+
+    console.error(error);
+    process.exit(1);
+  });
+
+  server.listen(port, "0.0.0.0", () => {
+    console.log(`Serving web build from ${STATIC_ROOT} on port ${port}`);
+  });
+}
 
 const port = parseInt(process.env.PORT || "3000", 10);
-server.listen(port, "0.0.0.0", () => {
-  console.log(`Serving static Expo build on port ${port}`);
-});
+startServer(port);
