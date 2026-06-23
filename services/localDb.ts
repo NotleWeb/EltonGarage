@@ -1,14 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Crypto from "expo-crypto";
-import * as SecureStore from "expo-secure-store";
-import * as SQLite from "expo-sqlite";
 import CryptoJS from "crypto-js";
 import { Platform } from "react-native";
 
 import type { AppData } from "@/context/DataContext";
 
-const DB_NAME = "elton_garage.db";
-const STORE_TABLE = "app_store";
 const ENCRYPTION_KEY_NAME = "@eg_encryption_key";
 const APP_DATA_KEY = "app_data";
 const AUTH_USER_KEY = "auth_user";
@@ -19,7 +15,6 @@ const LEGACY_AUTH_KEY = "@eg_auth_v1";
 const LEGACY_AUTH_USERNAME = "elton";
 const LEGACY_AUTH_PASSWORD = "23112004";
 
-let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 let encryptionKeyPromise: Promise<string> | null = null;
 const isWeb = Platform.OS === "web";
 
@@ -42,27 +37,6 @@ function buildDefaultAppData(): AppData {
   };
 }
 
-async function ensureDatabase(): Promise<SQLite.SQLiteDatabase | null> {
-  if (isWeb) {
-    return null;
-  }
-
-  if (!dbPromise) {
-    dbPromise = Promise.resolve().then(() => {
-      const db = SQLite.openDatabaseSync(DB_NAME);
-      db.execSync(`
-        CREATE TABLE IF NOT EXISTS ${STORE_TABLE} (
-          key TEXT PRIMARY KEY NOT NULL,
-          value TEXT NOT NULL,
-          updatedAt TEXT NOT NULL
-        );
-      `);
-      return db;
-    });
-  }
-
-  return dbPromise;
-}
 
 async function getStorageValue(key: string): Promise<string | null> {
   if (isWeb) {
@@ -130,17 +104,7 @@ async function getStoredValue(key: string): Promise<string | null> {
     return AsyncStorage.getItem(`@eg_store:${key}`);
   }
 
-  const db = await ensureDatabase();
-  if (!db) {
-    return null;
-  }
-
-  const row = db.getFirstSync(
-    `SELECT value FROM ${STORE_TABLE} WHERE key = ?`,
-    [key]
-  ) as { value: string } | undefined;
-
-  return row?.value ?? null;
+  return null;
 }
 
 async function setStoredValue(key: string, value: string): Promise<void> {
@@ -149,15 +113,7 @@ async function setStoredValue(key: string, value: string): Promise<void> {
     return;
   }
 
-  const db = await ensureDatabase();
-  if (!db) {
-    return;
-  }
-
-  db.runSync(
-    `INSERT INTO ${STORE_TABLE} (key, value, updatedAt) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updatedAt = excluded.updatedAt`,
-    [key, value, new Date().toISOString()]
-  );
+  return;
 }
 
 async function deleteStoredValue(key: string): Promise<void> {
@@ -166,12 +122,7 @@ async function deleteStoredValue(key: string): Promise<void> {
     return;
   }
 
-  const db = await ensureDatabase();
-  if (!db) {
-    return;
-  }
-
-  db.runSync(`DELETE FROM ${STORE_TABLE} WHERE key = ?`, [key]);
+  return;
 }
 
 async function hashPassword(password: string, salt: string): Promise<string> {
