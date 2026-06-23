@@ -2,8 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 const AUTH_KEY = "@eg_auth_v1";
-const VALID_USERNAME = "admin";
-const VALID_PASSWORD = "admin123";
+const VALID_USERNAME = "elton";
+const VALID_PASSWORD = "23112004";
 
 interface AuthContextType {
   isLoggedIn: boolean;

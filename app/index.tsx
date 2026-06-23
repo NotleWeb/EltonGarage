@@ -64,7 +64,7 @@ export default function LoginScreen() {
     const success = await login(username.trim(), password);
     setSubmitting(false);
     if (!success) {
-      setError("Credenciais inválidas. Tente admin / admin123");
+      setError("Credenciais inválidas.");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -242,7 +242,7 @@ export default function LoginScreen() {
             <Text
               style={[styles.hint, { color: colors.mutedForeground }]}
             >
-              Padrão: admin / admin123
+              Dica: Nome e senha
             </Text>
           </Animated.View>
         </ScrollView>
