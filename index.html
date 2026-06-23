@@ -6,7 +6,7 @@
     <title>Elton Garage</title>
     <meta
       name="description"
-      content="Sistema web para gestão de oficina e clientes."
+      content="Sistema web da Elton Garage para clientes, serviços, agenda e estoque."
     />
     <style>
       :root {
@@ -28,19 +28,18 @@
       }
 
       .page {
-        max-width: 1100px;
+        max-width: 1140px;
         margin: 0 auto;
-        padding: 48px 24px 80px;
+        padding: 40px 20px 80px;
       }
 
       .hero {
         display: grid;
         grid-template-columns: 1.1fr 0.9fr;
-        gap: 32px;
-        align-items: center;
-        padding: 36px;
+        gap: 24px;
+        padding: 32px;
         border-radius: 24px;
-        background: rgba(21, 18, 37, 0.9);
+        background: rgba(21, 18, 37, 0.92);
         box-shadow: 0 20px 60px rgba(0,0,0,0.25);
       }
 
@@ -52,26 +51,22 @@
         color: var(--accent);
         font-size: 0.9rem;
         font-weight: 700;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
       }
 
       h1 {
         font-size: clamp(2rem, 4vw, 3.2rem);
-        margin: 0 0 16px;
+        margin: 0 0 14px;
         line-height: 1.1;
       }
 
-      p {
-        color: var(--muted);
-        font-size: 1.05rem;
-        line-height: 1.7;
-      }
+      p { color: var(--muted); line-height: 1.7; }
 
       .actions {
         display: flex;
-        gap: 12px;
         flex-wrap: wrap;
-        margin-top: 24px;
+        gap: 12px;
+        margin-top: 22px;
       }
 
       .btn {
@@ -80,14 +75,13 @@
         padding: 12px 18px;
         border-radius: 999px;
         font-weight: 700;
-        transition: transform 0.2s ease;
       }
 
-      .btn:hover { transform: translateY(-2px); }
       .btn-primary {
         background: linear-gradient(90deg, var(--accent), #fbbf24);
         color: #111;
       }
+
       .btn-secondary {
         border: 1px solid rgba(255,255,255,0.14);
         color: var(--text);
@@ -98,37 +92,30 @@
         background: rgba(255,255,255,0.04);
         border: 1px solid rgba(255,255,255,0.08);
         border-radius: 20px;
-        padding: 24px;
+        padding: 20px;
       }
 
-      .card h2 {
-        margin-top: 0;
-        font-size: 1.15rem;
-      }
-
-      .features {
+      .grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-top: 24px;
+        gap: 12px;
+        margin-top: 16px;
       }
 
-      .features div {
-        background: rgba(255,255,255,0.04);
-        border-radius: 16px;
-        padding: 18px;
-        border: 1px solid rgba(255,255,255,0.08);
-      }
-
-      .features strong {
+      .link-card {
         display: block;
-        margin-bottom: 8px;
-        color: #fff;
+        text-decoration: none;
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: var(--text);
       }
+
+      .link-card strong { display: block; margin-bottom: 4px; }
+      .link-card span { color: var(--muted); font-size: 0.95rem; }
 
       @media (max-width: 860px) {
         .hero { grid-template-columns: 1fr; }
-        .features { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -137,36 +124,35 @@
       <section class="hero">
         <div>
           <span class="badge">Sistema web para oficina</span>
-          <h1>Gerencie clientes, serviços e estoque em um só lugar.</h1>
+          <h1>Gerencie clientes, serviços, agenda e estoque em um só lugar.</h1>
           <p>
-            A plataforma da Elton Garage foi criada para organizar sua operação com
-            agilidade, controle e uma interface moderna para o dia a dia.
+            A plataforma da Elton Garage agora funciona como uma aplicação web com acesso direto às telas principais do sistema.
           </p>
           <div class="actions">
-            <a class="btn btn-primary" href="/app">Acessar sistema</a>
-            <a class="btn btn-secondary" href="mailto:contato@eltongarage.com.br">Falar com o time</a>
+            <a class="btn btn-primary" href="/">Entrar no sistema</a>
+            <a class="btn btn-secondary" href="mailto:contato@eltongarage.com.br">Contato</a>
           </div>
         </div>
 
         <div class="card">
-          <h2>Pronto para uso</h2>
-          <p>
-            Interface responsiva, navegação simples e estrutura preparada para
-            hospedagem em site privado.
-          </p>
-          <div class="features">
-            <div>
+          <h2>Acesso rápido</h2>
+          <div class="grid">
+            <a class="link-card" href="/customers">
               <strong>Clientes</strong>
-              Gestão centralizada de contatos e histórico.
-            </div>
-            <div>
+              <span>Cadastro e busca de clientes e veículos.</span>
+            </a>
+            <a class="link-card" href="/services">
               <strong>Serviços</strong>
-              Controle de ordens e agenda de atendimento.
-            </div>
-            <div>
+              <span>Gerencie os serviços oferecidos.</span>
+            </a>
+            <a class="link-card" href="/schedule">
+              <strong>Agenda</strong>
+              <span>Controle de compromissos e agendamentos.</span>
+            </a>
+            <a class="link-card" href="/inventory">
               <strong>Estoque</strong>
-              Organização de peças e produtos disponíveis.
-            </div>
+              <span>Organize peças e produtos do estoque.</span>
+            </a>
           </div>
         </div>
       </section>
