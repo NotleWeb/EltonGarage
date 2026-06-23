@@ -1,7 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-const STORAGE_KEY = "@eg_data_v2";
+import { apiLoadData, apiSaveData } from "@/services/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -87,7 +86,7 @@ export interface AppNotification {
 
 // ─── Context interface ────────────────────────────────────────────────────────
 
-interface AppData {
+export interface AppData {
   customers: Customer[];
   services: Service[];
   appointments: Appointment[];
@@ -135,138 +134,13 @@ const DataContext = createContext<DataContextType>({} as DataContextType);
 const genId = () =>
   Date.now().toString() + Math.random().toString(36).substr(2, 9);
 
-// ─── Seed data ────────────────────────────────────────────────────────────────
-
-const SEED_DATA: AppData = {
-  seeded: true,
+const EMPTY_DATA: AppData = {
+  seeded: false,
   dismissedNotificationIds: [],
-  customers: [
-    {
-      id: "c1",
-      name: "Carlos Mendes",
-      phone: "(11) 98765-4321",
-      address: "Rua das Flores, 123 - São Paulo",
-      vehicles: [
-        { id: "v1", brand: "BMW", model: "Série 3", year: "2022", plate: "ABC-1234" },
-      ],
-      createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
-      lastServiceDate: new Date(Date.now() - 18 * 86400000).toISOString(),
-    },
-    {
-      id: "c2",
-      name: "Ana Souza",
-      phone: "(11) 91234-5678",
-      address: "Av. Paulista, 500 - São Paulo",
-      vehicles: [
-        { id: "v2", brand: "Audi", model: "A4", year: "2021", plate: "XYZ-9876" },
-        { id: "v3", brand: "Mercedes", model: "GLE", year: "2023", plate: "DEF-4567" },
-      ],
-      createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
-      lastServiceDate: new Date(Date.now() - 32 * 86400000).toISOString(),
-    },
-    {
-      id: "c3",
-      name: "Roberto Lima",
-      phone: "(11) 99876-5432",
-      address: "Rua Oscar Freire, 200 - São Paulo",
-      vehicles: [
-        { id: "v4", brand: "Porsche", model: "Cayenne", year: "2023", plate: "GHI-7890" },
-      ],
-      createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-    },
-  ],
-  services: [
-    { id: "s1", name: "Lavagem Premium", description: "Lavagem completa com proteção de cera cerâmica e brilho de pneus.", price: 250, duration: 90 },
-    { id: "s2", name: "Correção de Pintura", description: "Polimento mecânico em múltiplos estágios para remover riscos e swirls.", price: 1800, duration: 480 },
-    { id: "s3", name: "Higienização Interior", description: "Detalhamento completo do interior: aspiração, condicionamento de couro e limpeza a vapor.", price: 450, duration: 180 },
-    { id: "s4", name: "Revestimento Cerâmico", description: "Aplicação profissional de coating cerâmico para proteção de longa duração.", price: 2500, duration: 600 },
-    { id: "s5", name: "Restauração de Faróis", description: "Restauração completa de faróis amarelados ou opacos com selante UV.", price: 180, duration: 60 },
-  ],
-  appointments: [
-    {
-      id: "a1",
-      customerId: "c1",
-      vehicleId: "v1",
-      serviceIds: ["s1"],
-      date: new Date().toISOString().slice(0, 10),
-      time: "09:00",
-      notes: "Cliente solicita atenção especial nas rodas.",
-      status: "agendado",
-      createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-      discountValue: 0,
-      discountType: "fixo",
-      totalValue: 250,
-    },
-    {
-      id: "a2",
-      customerId: "c2",
-      vehicleId: "v2",
-      serviceIds: ["s2", "s3"],
-      date: new Date().toISOString().slice(0, 10),
-      time: "13:00",
-      notes: "",
-      status: "agendado",
-      createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-      discountValue: 50,
-      discountType: "fixo",
-      paymentMethod: "pix",
-      totalValue: 2200,
-    },
-    {
-      id: "a3",
-      customerId: "c3",
-      vehicleId: "v4",
-      serviceIds: ["s4"],
-      date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
-      time: "08:00",
-      notes: "Porsche novo — manusear com muito cuidado.",
-      status: "agendado",
-      createdAt: new Date().toISOString(),
-      discountValue: 0,
-      discountType: "fixo",
-      totalValue: 2500,
-    },
-    {
-      id: "a4",
-      customerId: "c2",
-      vehicleId: "v3",
-      serviceIds: ["s3"],
-      date: new Date(Date.now() - 32 * 86400000).toISOString().slice(0, 10),
-      time: "10:00",
-      notes: "",
-      status: "concluido",
-      createdAt: new Date(Date.now() - 34 * 86400000).toISOString(),
-      completedAt: new Date(Date.now() - 32 * 86400000).toISOString(),
-      discountValue: 0,
-      discountType: "fixo",
-      paymentMethod: "credito",
-      totalValue: 450,
-    },
-    {
-      id: "a5",
-      customerId: "c1",
-      vehicleId: "v1",
-      serviceIds: ["s1", "s5"],
-      date: new Date(Date.now() - 18 * 86400000).toISOString().slice(0, 10),
-      time: "09:00",
-      notes: "",
-      status: "concluido",
-      createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
-      completedAt: new Date(Date.now() - 18 * 86400000).toISOString(),
-      discountValue: 10,
-      discountType: "porcentagem",
-      paymentMethod: "dinheiro",
-      totalValue: 387,
-    },
-  ],
-  inventory: [
-    { id: "i1", name: "Shampoo Automotivo", price: 45, quantity: 8, unit: "L", minStock: 5 },
-    { id: "i2", name: "Desengraxante", price: 38, quantity: 500, unit: "ml", minStock: 1000 },
-    { id: "i3", name: "Coating Cerâmico Pro", price: 320, quantity: 2, unit: "un", minStock: 3 },
-    { id: "i4", name: "Panos Microfibra", price: 12, quantity: 24, unit: "un", minStock: 10 },
-    { id: "i5", name: "Kit Clay Bar", price: 85, quantity: 1, unit: "un", minStock: 2 },
-    { id: "i6", name: "Condicionador Interior", price: 92, quantity: 3, unit: "L", minStock: 2 },
-  ],
+  customers: [],
+  services: [],
+  appointments: [],
+  inventory: [],
   gallery: [],
 };
 
@@ -281,7 +155,6 @@ function buildNotifications(
   const now = Date.now();
   const notes: AppNotification[] = [];
 
-  // Low stock
   for (const item of inventory) {
     if (item.quantity < item.minStock) {
       const id = `estoque_${item.id}`;
@@ -298,7 +171,6 @@ function buildNotifications(
     }
   }
 
-  // Follow-up reminders for completed appointments only (not cancelled)
   const completedAppts = appointments.filter(
     (a) => a.status === "concluido" && a.completedAt
   );
@@ -310,7 +182,6 @@ function buildNotifications(
     const customer = customers.find((c) => c.id === appt.customerId);
     const name = customer?.name ?? "Cliente";
 
-    // Stage 1 — 15 days: offer a maintenance wash
     if (daysSince >= 15 && daysSince < 20) {
       const id = `retorno_15_${appt.id}`;
       if (!dismissed.includes(id)) {
@@ -326,7 +197,6 @@ function buildNotifications(
       }
     }
 
-    // Stage 2 — 20 days: second follow-up, check satisfaction
     if (daysSince >= 20 && daysSince < 30) {
       const id = `retorno_20_${appt.id}`;
       if (!dismissed.includes(id)) {
@@ -342,7 +212,6 @@ function buildNotifications(
       }
     }
 
-    // Stage 3 — 30 days: encourage a new appointment
     if (daysSince >= 30 && daysSince < 45) {
       const id = `retorno_30_${appt.id}`;
       if (!dismissed.includes(id)) {
@@ -358,7 +227,6 @@ function buildNotifications(
       }
     }
 
-    // Stage 4 — 45 days: retention campaign
     if (daysSince >= 45 && daysSince < 90) {
       const id = `retorno_45_${appt.id}`;
       if (!dismissed.includes(id)) {
@@ -375,7 +243,6 @@ function buildNotifications(
     }
   }
 
-  // Upcoming today
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayAppts = appointments.filter(
     (a) => a.date === todayStr && a.status === "agendado"
@@ -412,52 +279,29 @@ function buildNotifications(
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const [data, setData] = useState<AppData>({ ...SEED_DATA, seeded: false });
+  const [data, setData] = useState<AppData>(EMPTY_DATA);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          // Migration: convert old serviceId to serviceIds
-          if (parsed.appointments) {
-            parsed.appointments = parsed.appointments.map((a: any) => ({
-              discountValue: 0,
-              discountType: "fixo",
-              totalValue: 0,
-              ...a,
-              serviceIds: a.serviceIds ?? (a.serviceId ? [a.serviceId] : []),
-            }));
-          }
-          if (!parsed.dismissedNotificationIds) {
-            parsed.dismissedNotificationIds = [];
-          }
-          setData(parsed);
-        } catch {
-          setData(SEED_DATA);
-        }
-      } else {
-        setData(SEED_DATA);
+    void (async () => {
+      try {
+        const stored = await apiLoadData();
+        setData(stored ?? EMPTY_DATA);
+      } catch {
+        setData(EMPTY_DATA);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    });
+    })();
   }, []);
 
-  /**
-   * Functional updater pattern — always derives next state from the latest
-   * committed state (prev), avoiding stale-closure bugs in async callbacks
-   * such as Alert.alert confirmations.
-   */
   const save = (updater: (prev: AppData) => AppData) => {
     setData((prev) => {
       const next = updater(prev);
-      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      void apiSaveData(next).catch(() => undefined);
       return next;
     });
   };
-
-  // ── Customers ──
 
   const addCustomer = (c: Omit<Customer, "id" | "createdAt">): string => {
     const id = genId();
@@ -486,8 +330,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
-  // ── Services ──
-
   const addService = (s: Omit<Service, "id">) => {
     save((prev) => ({
       ...prev,
@@ -508,8 +350,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       services: prev.services.filter((x) => x.id !== id),
     }));
   };
-
-  // ── Appointments ──
 
   const addAppointment = (a: Omit<Appointment, "id" | "createdAt">) => {
     save((prev) => ({
@@ -539,9 +379,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const appt = prev.appointments.find((a) => a.id === id);
         if (appt) {
           newCustomers = prev.customers.map((c) =>
-            c.id === appt.customerId
-              ? { ...c, lastServiceDate: now }
-              : c
+            c.id === appt.customerId ? { ...c, lastServiceDate: now } : c
           );
         }
       }
@@ -556,8 +394,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       appointments: prev.appointments.filter((x) => x.id !== id),
     }));
   };
-
-  // ── Inventory ──
 
   const addInventoryItem = (i: Omit<InventoryItem, "id">) => {
     save((prev) => ({
@@ -580,8 +416,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
-  // ── Gallery ──
-
   const addGalleryEntry = (g: Omit<GalleryEntry, "id">) => {
     save((prev) => ({
       ...prev,
@@ -596,15 +430,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
-  // ── Notifications ──
-
   const dismissNotification = (id: string) => {
     save((prev) => ({
       ...prev,
-      dismissedNotificationIds: [
-        ...(prev.dismissedNotificationIds ?? []),
-        id,
-      ],
+      dismissedNotificationIds: [...(prev.dismissedNotificationIds ?? []), id],
     }));
   };
 
@@ -625,8 +454,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       };
     });
   };
-
-  // ── Computed notifications ──
 
   const notifications = useMemo(
     () =>

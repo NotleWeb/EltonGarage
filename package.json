@@ -58,6 +58,13 @@
     "zod-validation-error": "^3.4.0"
   },
   "dependencies": {
-    "expo-dev-client": "~6.0.21"
+    "@types/crypto-js": "^4.2.2",
+    "body-parser": "^2.3.0",
+    "crypto-js": "^4.2.0",
+    "expo-crypto": "^56.0.4",
+    "expo-dev-client": "~6.0.21",
+    "expo-secure-store": "^56.0.4",
+    "expo-sqlite": "^56.0.5",
+    "express": "^5.2.1"
   }
 }

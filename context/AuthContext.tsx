@@ -1,9 +1,10 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-const AUTH_KEY = "@eg_auth_v1";
-const VALID_USERNAME = "elton";
-const VALID_PASSWORD = "23112004";
+import {
+  authenticateUser,
+  hasActiveSession,
+  setAuthSession,
+} from "@/services/localDb";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -24,26 +25,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    AsyncStorage.getItem(AUTH_KEY).then((val) => {
-      if (val === "true") setIsLoggedIn(true);
-      setIsLoading(false);
-    });
+    void (async () => {
+      try {
+        const active = await hasActiveSession();
+        setIsLoggedIn(active);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }, []);
 
   const login = async (username: string, password: string): Promise<boolean> => {
-    if (
-      username.trim().toLowerCase() === VALID_USERNAME &&
-      password === VALID_PASSWORD
-    ) {
-      await AsyncStorage.setItem(AUTH_KEY, "true");
+    const ok = await authenticateUser(username, password);
+    if (ok) {
+      await setAuthSession(true);
       setIsLoggedIn(true);
-      return true;
     }
-    return false;
+    return ok;
   };
 
   const logout = async () => {
-    await AsyncStorage.removeItem(AUTH_KEY);
+    await setAuthSession(false);
     setIsLoggedIn(false);
   };
 

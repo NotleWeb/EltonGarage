@@ -10,6 +10,9 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const express = require("express");
+const bodyParser = require("body-parser");
+const routes = require("./routes");
 
 const STATIC_ROOT = path.resolve(__dirname, "..", "dist");
 const TEMPLATE_PATH = path.resolve(__dirname, "templates", "landing-page.html");
@@ -115,7 +118,11 @@ const landingPageTemplate = fs.readFileSync(TEMPLATE_PATH, "utf-8");
 const appName = getAppName();
 
 function startServer(port) {
-  const server = http.createServer((req, res) => {
+  const app = express();
+  app.use(bodyParser.json());
+  app.use("/api", routes);
+
+  app.use((req, res) => {
     const url = new URL(req.url || "/", `http://${req.headers.host}`);
     let pathname = url.pathname;
 
@@ -136,6 +143,8 @@ function startServer(port) {
 
     serveStaticFile(pathname, res);
   });
+
+  const server = http.createServer(app);
 
   server.on("error", (error) => {
     if (error.code === "EADDRINUSE") {
